@@ -107,6 +107,77 @@ for w in range(WATER_STATES):
                     else:
                         R[s, a_idx, s_new] = -1
 
+
+# Following the algorithm given in Sutton and Barto, Pg. 83
+def run_value_iteration(P, R, gamma=0.95, theta=1e-5):
+    V = np.zeros(NUM_STATES)
+    policy = np.zeros(NUM_STATES, dtype=int)
+
+    print("Running Value Iteration...")
+    iteration = 0
+    while True:
+        delta = 0.0
+        # loop for each s belonging to S:
+        for w in range(WATER_STATES):
+            for r in range(ROWS):
+                for c in range(COLS):
+                    s = w * (ROWS * COLS) + r * COLS + c
+
+                    # for handling V(terminal) = 0
+                    is_terminal = False
+                    if (r, c) in BOULDERS:
+                        is_terminal = True
+                    elif (r, c) == FIRE and w == 1:
+                        is_terminal = True
+
+                    if is_terminal:
+                        continue
+
+                    v_old = V[s]
+                    action_values = np.zeros(NUM_ACTIONS)
+
+                    # iterate over all actions to find max value
+                    for a_idx in range(NUM_ACTIONS):
+                        for s_new in range(NUM_STATES):
+                            action_values[a_idx] += P[s, a_idx, s_new] * (
+                                R[s, a_idx, s_new] + gamma * V[s_new]
+                            )
+
+                    V[s] = np.max(action_values)
+                    delta = max(delta, abs(v_old - V[s]))
+
+        iteration += 1
+        if delta < theta:
+            print(f"Converged in {iteration} iterations.")
+            break
+
+    # extract deterministic policy
+    for w in range(WATER_STATES):
+        for r in range(ROWS):
+            for c in range(COLS):
+                s = w * (ROWS * COLS) + r * COLS + c
+
+                is_terminal = False
+                if (r, c) in BOULDERS:
+                    is_terminal = True
+                elif (r, c) == FIRE and w == 1:
+                    is_terminal = True
+
+                if is_terminal:
+                    continue
+
+                action_values = np.zeros(NUM_ACTIONS)
+                for a_idx in range(NUM_ACTIONS):
+                    for s_new in range(NUM_STATES):
+                        action_values[a_idx] += P[s, a_idx, s_new] * (
+                            R[s, a_idx, s_new] + gamma * V[s_new]
+                        )
+
+                policy[s] = np.argmax(action_values)
+
+    return V, policy
+
+
 if __name__ == "__main__":
     q1_r, q1_c, q1_w = 3, 3, 0
     s_q1 = q1_w * (ROWS * COLS) + q1_r * COLS + q1_c
