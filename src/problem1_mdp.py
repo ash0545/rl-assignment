@@ -1,4 +1,6 @@
 import numpy as np
+import matplotlib.pyplot as plt
+import os
 
 # Grid world dimensions
 ROWS = 5
@@ -178,18 +180,102 @@ def run_value_iteration(P, R, gamma=0.95, theta=1e-5):
     return V, policy
 
 
-if __name__ == "__main__":
-    q1_r, q1_c, q1_w = 3, 3, 0
-    s_q1 = q1_w * (ROWS * COLS) + q1_r * COLS + q1_c
-    print("Q1: Transitions and Rewards from (3,3), Water = 0")
+# AI generated visualization code
+def visualize_phase(V, policy, w, filename):
+    """Generates side-by-side plots for Value Function and Policy."""
+    fig, axes = plt.subplots(1, 2, figsize=(12, 5))
 
-    for a_idx, a_str in enumerate(ACTIONS):
-        print(f"Action: {a_str}")
-        # neighbors and the cell itself
-        for r_new in range(q1_r - 1, q1_r + 2):
-            for c_new in range(q1_c - 1, q1_c + 2):
-                ns = q1_w * (ROWS * COLS) + r_new * COLS + c_new
-                prob = P[s_q1, a_idx, ns]
-                reward = R[s_q1, a_idx, ns]
-                print(f"  -> to ({r_new},{c_new}): P = {prob:.2f}, R = {reward}")
-        print()
+    V_grid = np.zeros((ROWS, COLS))
+    policy_grid = np.zeros((ROWS, COLS), dtype=int)
+
+    for r in range(ROWS):
+        for c in range(COLS):
+            s = w * (ROWS * COLS) + r * COLS + c
+            V_grid[r, c] = V[s]
+            policy_grid[r, c] = policy[s]
+
+    # --- Plot Value Function ---
+    ax = axes[0]
+    cax = ax.matshow(V_grid, cmap="coolwarm")
+    fig.colorbar(cax, ax=ax)
+    for r in range(ROWS):
+        for c in range(COLS):
+            ax.text(
+                c,
+                r,
+                f"{V_grid[r, c]:.1f}",
+                va="center",
+                ha="center",
+                color="black" if -50 < V_grid[r, c] < 50 else "white",
+            )
+    ax.set_title(f"Value Function (Water={'Filled' if w else 'Empty'})")
+    ax.set_xticks([])
+    ax.set_yticks([])
+
+    # --- Plot Policy ---
+    ax = axes[1]
+    ax.set_xlim(-0.5, COLS - 0.5)
+    ax.set_ylim(ROWS - 0.5, -0.5)
+    ax.set_title(f"Optimal Policy (Water={'Filled' if w else 'Empty'})")
+    ax.grid(color="k", linestyle="-", linewidth=1)
+    ax.set_xticks(np.arange(-0.5, COLS, 1))
+    ax.set_yticks(np.arange(-0.5, ROWS, 1))
+    ax.set_xticklabels([])
+    ax.set_yticklabels([])
+
+    # Unicode arrows: 0:North, 1:South, 2:East, 3:West, 4:Hover
+    arrows = ["↑", "↓", "→", "←", "↻"]
+
+    for r in range(ROWS):
+        for c in range(COLS):
+            if (r, c) in BOULDERS:
+                ax.add_patch(plt.Rectangle((c - 0.5, r - 0.5), 1, 1, facecolor="gray"))
+                ax.text(c, r, "B", va="center", ha="center", color="white")
+                continue
+            if (r, c) == FIRE and w == 1:
+                ax.add_patch(
+                    plt.Rectangle((c - 0.5, r - 0.5), 1, 1, facecolor="orange")
+                )
+                ax.text(c, r, "F", va="center", ha="center", color="white")
+                continue
+            if (r, c) == LAKE and w == 0:
+                ax.add_patch(
+                    plt.Rectangle((c - 0.5, r - 0.5), 1, 1, facecolor="lightblue")
+                )
+            if (r, c) in SMOKE:
+                ax.add_patch(
+                    plt.Rectangle((c - 0.5, r - 0.5), 1, 1, facecolor="whitesmoke")
+                )
+
+            a = policy_grid[r, c]
+            ax.text(c, r, arrows[a], va="center", ha="center", fontsize=20)
+
+    # Ensure output directory exists
+    os.makedirs("outputs", exist_ok=True)
+    plt.savefig(f"outputs/{filename}")
+    plt.close()
+    print(f"Saved visualization to outputs/{filename}")
+
+
+if __name__ == "__main__":
+    # print("Q1: Transitions and Rewards from (3,3), Water = 0")
+    # q1_r, q1_c, q1_w = 3, 3, 0
+    # s_q1 = q1_w * (ROWS * COLS) + q1_r * COLS + q1_c
+
+    # for a_idx, a_str in enumerate(ACTIONS):
+    #     print(f"Action: {a_str}")
+    #     # neighbors and the cell itself
+    #     for r_new in range(q1_r - 1, q1_r + 2):
+    #         for c_new in range(q1_c - 1, q1_c + 2):
+    #             ns = q1_w * (ROWS * COLS) + r_new * COLS + c_new
+    #             prob = P[s_q1, a_idx, ns]
+    #             reward = R[s_q1, a_idx, ns]
+    #             print(f"  -> to ({r_new},{c_new}): P = {prob:.2f}, R = {reward}")
+    #     print()
+
+    print("Q2: Value Iteration")
+    optimal_V, optimal_policy = run_value_iteration(P, R)
+
+    # The two phases constituting the MDP
+    visualize_phase(optimal_V, optimal_policy, w=0, filename="phase1_water_empty.png")
+    visualize_phase(optimal_V, optimal_policy, w=1, filename="phase2_water_filled.png")
