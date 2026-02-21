@@ -41,7 +41,7 @@ for w in range(WATER_STATES):
             )  # State index, required for filling P and R
 
             # Terminal states => absorbing states
-            if (r, c) in BOULDERS or (r, c) == FIRE:
+            if (r, c) in BOULDERS or ((r, c) == FIRE and w == 1):
                 P[s, :, s] = 1.0  # ":" since all actions are to lead to the same state
                 R[s, :, s] = 0.0
                 continue
@@ -110,3 +110,15 @@ for w in range(WATER_STATES):
 if __name__ == "__main__":
     q1_r, q1_c, q1_w = 3, 3, 0
     s_q1 = q1_w * (ROWS * COLS) + q1_r * COLS + q1_c
+    print("Q1: Transitions and Rewards from (3,3), Water = 0")
+
+    for a_idx, a_str in enumerate(ACTIONS):
+        print(f"Action: {a_str}")
+        # neighbors and the cell itself
+        for r_new in range(q1_r - 1, q1_r + 2):
+            for c_new in range(q1_c - 1, q1_c + 2):
+                ns = q1_w * (ROWS * COLS) + r_new * COLS + c_new
+                prob = P[s_q1, a_idx, ns]
+                reward = R[s_q1, a_idx, ns]
+                print(f"  -> to ({r_new},{c_new}): P = {prob:.2f}, R = {reward}")
+        print()
