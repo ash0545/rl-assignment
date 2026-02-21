@@ -32,3 +32,33 @@ BOULDERS = [(2, 4), (3, 4)]
 # Initialize transition probabilities and rewards
 P = np.zeros((NUM_STATES, NUM_ACTIONS, NUM_STATES))
 R = np.zeros((NUM_STATES, NUM_ACTIONS, NUM_STATES))
+
+for w in range(WATER_STATES):
+    for r in range(ROWS):
+        for c in range(COLS):
+            s = (
+                w * (ROWS * COLS) + r * COLS + c
+            )  # State index, required for filling P and R
+
+            # Terminal states => absorbing states
+            if (r, c) in BOULDERS or (r, c) == FIRE:
+                P[s, :, s] = 1.0  # ":" since all actions are to lead to the same state
+                R[s, :, s] = 0.0
+                continue
+
+            for a_idx, a in enumerate(ACTIONS):
+                # Probabilities are affected by wind + smoke, unless we hover
+                is_smoke = (r, c) in SMOKE
+
+                p_intended = 0.4 if is_smoke else 0.7
+                p_perpendicular = 0.1
+                p_stay = 0.4 if is_smoke else 0.1
+
+                if a == "Hover":
+                    p_intended = 1.0
+                    p_perpendicular = 0.0
+                    p_stay = 0.0
+
+                # Instead of updating everything simultaneously, split into possible moves followed by bounding
+if __name__ == "__main__":
+    pass
