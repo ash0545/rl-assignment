@@ -59,53 +59,54 @@ for w in range(WATER_STATES):
                     p_perpendicular = 0.0
                     p_stay = 0.0
 
-            # Generate all possible outcomes (ignoring boundaries, handled later)
-            transitions = (
-                []
-            )  # holds (prob, r, c), where (r,c) is where drone is trying to go
+                # Generate all possible outcomes (ignoring boundaries, handled later)
+                transitions = (
+                    []
+                )  # holds (prob, r, c), where (r,c) is where drone is trying to go
 
-            if a == "Hover":
-                transitions.append((1.0, r, c))
-            else:
-                # intending to go
-                r_int, c_int = r + ACTION_DELTAS[a][0], c + ACTION_DELTAS[a][1]
-                transitions.append((p_intended, r_int, c_int))
-
-                # motor break
-                transitions.append((p_stay, r, c))
-
-                # wind
-                for a_perp in PERPENDICULAR_ACTIONS[a]:
-                    r_perp, c_perp = (
-                        r + ACTION_DELTAS[a_perp][0],
-                        c + ACTION_DELTAS[a_perp][1],
-                    )
-                    transitions.append((p_perpendicular, r_perp, c_perp))
-
-            # Handle boundaries, water, rewards (direct assignment to matrices)
-            for prob, r_new, c_new in transitions:
-                # boundaries
-                if r_new < 0 or r_new >= ROWS or c_new < 0 or c_new >= COLS:
-                    r_new, c_new = r, c  # stay at the boundary
-
-                # fill water
-                w_new = w
-                if (r_new, c_new) == LAKE and w == 0:
-                    w_new = 1
-
-                s_new = w_new * (ROWS * COLS) + r_new * COLS + c_new
-
-                P[s, a_idx, s_new] += prob
-
-                # rewards
-                if (r_new, c_new) == FIRE and w_new == 1:
-                    R[s, a_idx, s_new] = 100
-                elif (r_new, c_new) in BOULDERS:
-                    R[s, a_idx, s_new] = -100
-                elif (r_new, c_new) in SMOKE:
-                    R[s, a_idx, s_new] = -11
+                if a == "Hover":
+                    transitions.append((1.0, r, c))
                 else:
-                    R[s, a_idx, s_new] = -1
+                    # intending to go
+                    r_int, c_int = r + ACTION_DELTAS[a][0], c + ACTION_DELTAS[a][1]
+                    transitions.append((p_intended, r_int, c_int))
+
+                    # motor break
+                    transitions.append((p_stay, r, c))
+
+                    # wind
+                    for a_perp in PERPENDICULAR_ACTIONS[a]:
+                        r_perp, c_perp = (
+                            r + ACTION_DELTAS[a_perp][0],
+                            c + ACTION_DELTAS[a_perp][1],
+                        )
+                        transitions.append((p_perpendicular, r_perp, c_perp))
+
+                # Handle boundaries, water, rewards (direct assignment to matrices)
+                for prob, r_new, c_new in transitions:
+                    # boundaries
+                    if r_new < 0 or r_new >= ROWS or c_new < 0 or c_new >= COLS:
+                        r_new, c_new = r, c  # stay at the boundary
+
+                    # fill water
+                    w_new = w
+                    if (r_new, c_new) == LAKE and w == 0:
+                        w_new = 1
+
+                    s_new = w_new * (ROWS * COLS) + r_new * COLS + c_new
+
+                    P[s, a_idx, s_new] += prob
+
+                    # rewards
+                    if (r_new, c_new) == FIRE and w_new == 1:
+                        R[s, a_idx, s_new] = 100
+                    elif (r_new, c_new) in BOULDERS:
+                        R[s, a_idx, s_new] = -100
+                    elif (r_new, c_new) in SMOKE:
+                        R[s, a_idx, s_new] = -11
+                    else:
+                        R[s, a_idx, s_new] = -1
 
 if __name__ == "__main__":
-    pass
+    q1_r, q1_c, q1_w = 3, 3, 0
+    s_q1 = q1_w * (ROWS * COLS) + q1_r * COLS + q1_c
