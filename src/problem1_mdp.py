@@ -273,9 +273,18 @@ if __name__ == "__main__":
     #             print(f"  -> to ({r_new},{c_new}): P = {prob:.2f}, R = {reward}")
     #     print()
 
-    print("Q2: Value Iteration")
-    optimal_V, optimal_policy = run_value_iteration(P, R)
+    # print("Q2: Value Iteration")
+    # optimal_V, optimal_policy = run_value_iteration(P, R)
 
-    # The two phases constituting the MDP
-    visualize_phase(optimal_V, optimal_policy, w=0, filename="phase1_water_empty.png")
-    visualize_phase(optimal_V, optimal_policy, w=1, filename="phase2_water_filled.png")
+    # # The two phases constituting the MDP
+    # visualize_phase(optimal_V, optimal_policy, w=0, filename="phase1_water_empty.png")
+    # visualize_phase(optimal_V, optimal_policy, w=1, filename="phase2_water_filled.png")
+
+    print("Q3: Modified MDP setting - gamma = 0.3")
+    optimal_V, optimal_policy = run_value_iteration(P, R, gamma=0.3)
+    visualize_phase(
+        optimal_V, optimal_policy, w=0, filename="phase1_wempty_gamma_0.3.png"
+    )
+    visualize_phase(
+        optimal_V, optimal_policy, w=1, filename="phase2_wfilled_gamma_0.3.png"
+    )
