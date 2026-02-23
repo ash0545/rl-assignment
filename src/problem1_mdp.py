@@ -52,9 +52,13 @@ for w in range(WATER_STATES):
                 # Probabilities are affected by wind + smoke, unless we hover
                 is_smoke = (r, c) in SMOKE
 
-                p_intended = 0.4 if is_smoke else 0.7
-                p_perpendicular = 0.1
-                p_stay = 0.4 if is_smoke else 0.1
+                # p_intended = 0.4 if is_smoke else 0.7
+                # p_perpendicular = 0.1
+                # p_stay = 0.4 if is_smoke else 0.1
+                # Below are the modified probabilities for Q4: Heavier Penalties, Windier MDP
+                p_intended = 0.4
+                p_perpendicular = 0.25
+                p_stay = 0.1
 
                 if a == "Hover":
                     p_intended = 1.0
@@ -105,7 +109,10 @@ for w in range(WATER_STATES):
                     elif (r_new, c_new) in BOULDERS:
                         R[s, a_idx, s_new] = -100
                     elif (r_new, c_new) in SMOKE:
-                        R[s, a_idx, s_new] = -11
+                        # R[s, a_idx, s_new] = -11
+                        R[s, a_idx, s_new] = (
+                            -91
+                        )  # for Q4: Heavier Penalties, Windier MDP
                     else:
                         R[s, a_idx, s_new] = -1
 
@@ -280,11 +287,22 @@ if __name__ == "__main__":
     # visualize_phase(optimal_V, optimal_policy, w=0, filename="phase1_water_empty.png")
     # visualize_phase(optimal_V, optimal_policy, w=1, filename="phase2_water_filled.png")
 
-    print("Q3: Modified MDP setting - gamma = 0.3")
-    optimal_V, optimal_policy = run_value_iteration(P, R, gamma=0.3)
+    # print("Q3: Modified MDP setting - gamma = 0.3")
+    # optimal_V, optimal_policy = run_value_iteration(P, R, gamma=0.3)
+    # visualize_phase(
+    #     optimal_V, optimal_policy, w=0, filename="phase1_wempty_gamma_0.3.png"
+    # )
+    # visualize_phase(
+    #     optimal_V, optimal_policy, w=1, filename="phase2_wfilled_gamma_0.3.png"
+    # )
+
+    print("Q4: Heavier Penalties, Windier MDP")
+    # hardcoded values in line 108 was changed from -11 to -91
+    # another hardcoded was then applied for probabilities in lines 59-61
+    optimal_V, optimal_policy = run_value_iteration(P, R)
     visualize_phase(
-        optimal_V, optimal_policy, w=0, filename="phase1_wempty_gamma_0.3.png"
+        optimal_V, optimal_policy, w=0, filename="phase1_water_empty_90haz_windy.png"
     )
     visualize_phase(
-        optimal_V, optimal_policy, w=1, filename="phase2_wfilled_gamma_0.3.png"
+        optimal_V, optimal_policy, w=1, filename="phase2_water_filled_90haz_windy.png"
     )
