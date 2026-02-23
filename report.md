@@ -35,3 +35,21 @@ Once the values converge (i.e., the maximum change across all states is less tha
 $$\pi_*(s) = \text{argmax}_a \sum_{s', r} p(s', r|s,a) [r + \gamma V_*(s')]$$
 
 The required visualizations are present in the `outputs/` directory, for both phases (water_empty and water_filled).
+
+**3. Modifying the Discount Factor ($\gamma = 0.3$)**
+
+- **(a) What are the resulting optimal value function and policy? Explain the difference.**
+
+The optimal value function drops drastically compared to $\gamma = 0.95$, with most states far from the goal evaluating to negative values (~ -1.4). A discount factor of $\gamma = 0.3$ makes the drone extremely myopic (short-sighted). The distant +100 reward is discounted so heavily that it cannot outweigh the immediate accumulation of -1 step penalties, causing the drone to abandon the main objective if it is too far away.
+
+- **(b) What happens near the hazardous states when $\gamma = 0.3$? Can you explain the behavior?**
+
+Near hazardous states, the drone adopts a purely evasive or stationary policy, such as moving away from the smoke or hovering. Because the drone is short-sighted, it prioritizes avoiding the massive immediate penalties of smoke (-11) or boulders (-100). It lacks the long-term incentive required to risk the 10% chance of the wind blowing it into a hazard while trying to navigate past it.
+
+- **(c) Is there any case in the two MDPs where the drone prefers doing nothing (hovering) despite the per-step penalty? Explain either ways.**
+
+Yes. In the $\gamma = 0.3$ MDP, the drone chooses to hover in cells completely surrounded by hazards (e.g., cell `(2, 2)` between two smoke cells, or `(3, 3)` near smoke and a boulder). Hovering is deterministic and unaffected by wind. The myopic drone prefers the guaranteed -1 hover penalty over taking a directional step that carries a 10% risk of being blown into the boulder. The $\gamma = 0.95$ drone never hovers (except at the lake) since doing so delays reaching the +100 goal.
+
+- **(d) Are there any interesting states where the drone behaves differently in the two MDPs? Explain.**
+
+Cells `(1, 3)` and `(0, 2)` during both phases are prime examples. Considering phase 1 with $\gamma = 0.95$, the drone at `(1, 3)` moves North to efficiently route around the smoke and reach the lake. With $\gamma = 0.3$, the drone at `(1, 3)` moves East—actively running away from the adjacent smoke at `(1, 2)` and burying itself in the corner, completely abandoning the lake because immediate survival outweighs the heavily discounted goal. This "avoidance" behaviour is present at `(0, 2)` as well.
