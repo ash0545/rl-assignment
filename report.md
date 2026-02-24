@@ -53,3 +53,17 @@ Yes. In the $\gamma = 0.3$ MDP, the drone chooses to hover in cells completely s
 - **(d) Are there any interesting states where the drone behaves differently in the two MDPs? Explain.**
 
 Cells `(1, 3)` and `(0, 2)` during both phases are prime examples. Considering phase 1 with $\gamma = 0.95$, the drone at `(1, 3)` moves North to efficiently route around the smoke and reach the lake. With $\gamma = 0.3$, the drone at `(1, 3)` moves East—actively running away from the adjacent smoke at `(1, 2)` and burying itself in the corner, completely abandoning the lake because immediate survival outweighs the heavily discounted goal. This "avoidance" behaviour is present at `(0, 2)` as well.
+
+**4. Modifying Hazard Penalties and Wind Dynamics**
+
+- **(a) What are the resulting optimal value function and policy? Explain the difference (if any) in the solution due to changing the problem in the two MDPs. Focus on the regions near hazardous cells.**
+The value function drops drastically around the smoke hazards at (1, 2) and (3, 2), reflecting extreme risk. The optimal policy becomes highly risk-averse; rather than skirting the hazards as in the base case, the policy routes the drone explicitly away from them to completely avoid the 10% risk of the wind pushing it into a -91 penalty.
+
+- **(b) Is there are scenario where hovering may be preferred? Explain either ways.**
+Yes. In the Empty Water phase, cell (3, 3) prefers Hovering, with a value of exactly -20.0. Because (3, 3) is bordered by smoke at (3, 2) and a boulder at (3, 4), any directional movement carries a 10% chance of a massive penalty. The expected return of moving drops below -20, making the infinite penalty of hovering (-1 / (1 - 0.95) = -20) the optimal choice.
+
+- **(c) Is there are scenario when a longer path to the fire zone is preferable from a particular cell? Why or why not?**
+Yes. If the drone starts at (4, 4) in the Empty Water phase, the shortest path is towards the center. However, the optimal policy routes it LEFT along the bottom row. Also, at cells like (4, 2), the policy is to move DOWN. The drone intentionally drives into the bottom wall so that the intended motion keeps it safely in place, allowing the perpendicular wind to push it left or right. This longer path eliminates the risk of being blown North into the smoke.
+
+- **(d) Given the above MDP with the −90 hazard penalty and γ = 0.95, suppose the wind becomes stronger. As a result, in all non-terminal states, the drone moves in the intended direction with a chance of 40%, in either of the perpendicular direction with a chance of 25%, and stays in same the cell rest of the times. Comment your thoughts on the solution to the resulting MDP.**
+With the wind volatility increased to a 25% perpendicular push in each direction, the environment becomes too chaotic to navigate narrow safe corridors. The value function decreases grid-wide, with the drone abandoning the objective entirely from even more states (ex: cells (2, 2) and (3, 3) in both phases now default to a permanent Hover (value -20.0). The 25% risk of being blown into a hazard makes doing nothing the best choice).
