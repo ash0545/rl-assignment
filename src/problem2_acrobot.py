@@ -2,8 +2,24 @@ import gymnasium as gym
 import numpy as np
 
 
+# creates the "bounds" of bins for the state space
+def create_bins(env, num_bins=10):
+    bins = []
+    obs_low = env.observation_space.low
+    obs_high = env.observation_space.high
+
+    for i in range(len(obs_low)):
+        # np.linspace creates num_bins+1 edges. We take the internal num_bins-1 edges for np.digitize.
+        b = np.linspace(obs_low[i], obs_high[i], num_bins + 1)[1:-1]
+        bins.append(b)
+    return bins
+
+
+# maps continuous state to discrete state using the bins created above
 def discretize_state(state, bins):
-    pass
+    # np.digitize returns the index of the bin to which each value belongs.
+    discrete_state = tuple(np.digitize(s, b) for s, b in zip(state, bins))
+    return discrete_state
 
 
 # Sutton and Barto, Pg. 28: "...behave greedily most of the time, but every once in a while, say with small probability
