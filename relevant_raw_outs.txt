@@ -1,3 +1,5 @@
+HYPERPARAMETER SWEEP OUTPUTS:
+
 Hyperparameter Search: SARSA
   [sarsa] alpha=0.1, eps=0.05 -> mean_final=-431.02
   [sarsa] alpha=0.1, eps=0.1 -> mean_final=-454.81
@@ -29,3 +31,11 @@ Top 3 Q-Learning configurations:
   alpha=0.3, epsilon=0.1 -> -397.19
   alpha=0.3, epsilon=0.05 -> -416.88
   alpha=0.5, epsilon=0.1 -> -424.31
+
+EPSILON DECAY CHECK OUTPUTS:
+
+Epsilon Decay Check
+SARSA Constant Eps (0.05) Final Return: -441.24
+SARSA Decaying Eps (1.0->0.05) Final Return: -402.84
+Q-learning Constant Eps (0.05) Final Return: -446.66
+Q-learning Decaying Eps (1.0->0.05) Final Return: -480.34

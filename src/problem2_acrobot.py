@@ -176,18 +176,60 @@ def hyperparameter_search(algo, num_episodes=500, num_runs=3):
 
 
 if __name__ == "__main__":
-    print("Hyperparameter Search: SARSA")
-    sarsa_results = hyperparameter_search("sarsa")
-    print("\nTop 3 SARSA configurations:")
-    for r in sarsa_results[:3]:
-        print(
-            f"  alpha={r['alpha']}, epsilon={r['epsilon']} -> {r['mean_final_return']:.2f}"
-        )
+    # Q-2(a)
+    # print("Hyperparameter Search: SARSA")
+    # sarsa_results = hyperparameter_search("sarsa")
+    # print("\nTop 3 SARSA configurations:")
+    # for r in sarsa_results[:3]:
+    #     print(
+    #         f"  alpha={r['alpha']}, epsilon={r['epsilon']} -> {r['mean_final_return']:.2f}"
+    #     )
 
-    print("\nHyperparameter Search: Q-Learning")
-    ql_results = hyperparameter_search("qlearning")
-    print("\nTop 3 Q-Learning configurations:")
-    for r in ql_results[:3]:
-        print(
-            f"  alpha={r['alpha']}, epsilon={r['epsilon']} -> {r['mean_final_return']:.2f}"
-        )
+    # print("\nHyperparameter Search: Q-Learning")
+    # ql_results = hyperparameter_search("qlearning")
+    # print("\nTop 3 Q-Learning configurations:")
+    # for r in ql_results[:3]:
+    #     print(
+    #         f"  alpha={r['alpha']}, epsilon={r['epsilon']} -> {r['mean_final_return']:.2f}"
+    #     )
+
+    env = gym.make("Acrobot-v1")
+    NUM_EPISODES = 500
+    NUM_SEEDS = 10
+    print("Epsilon Decay Check")
+    sarsa_const = train(env, "sarsa", NUM_EPISODES, alpha=0.5, epsilon=0.05, seed=42)
+    sarsa_decay = train(
+        env,
+        "sarsa",
+        NUM_EPISODES,
+        alpha=0.5,
+        epsilon=1.0,
+        epsilon_decay=0.99,
+        epsilon_min=0.05,
+        seed=42,
+    )
+
+    print(f"SARSA Constant Eps (0.05) Final Return: {np.mean(sarsa_const[-50:]):.2f}")
+    print(
+        f"SARSA Decaying Eps (1.0->0.05) Final Return: {np.mean(sarsa_decay[-50:]):.2f}"
+    )
+
+    qlearn_const = train(
+        env, "qlearning", NUM_EPISODES, alpha=0.5, epsilon=0.05, seed=42
+    )
+    qlearn_decay = train(
+        env,
+        "qlearning",
+        NUM_EPISODES,
+        alpha=0.5,
+        epsilon=1.0,
+        epsilon_decay=0.99,
+        epsilon_min=0.05,
+        seed=42,
+    )
+    print(
+        f"Q-learning Constant Eps (0.05) Final Return: {np.mean(qlearn_const[-50:]):.2f}"
+    )
+    print(
+        f"Q-learning Decaying Eps (1.0->0.05) Final Return: {np.mean(qlearn_decay[-50:]):.2f}"
+    )
