@@ -101,8 +101,93 @@ def run_qlearning_episode(env, Q, bins, alpha, epsilon, gamma=0.99):
     return total_reward
 
 
-if __name__ == "__main__":
-    print("Testing Acrobot Setup...")
+# train using SARSA or Q-learning for a given no of episodes, return per-episode returns
+# set up to allow for hyperparameter search (step size alpha, epsilon) for 2a
+# epsilon decay as well, for comparing
+def train(
+    env,
+    algo,
+    num_episodes,
+    alpha,
+    epsilon,
+    num_bins=10,
+    gamma=0.99,
+    epsilon_decay=None,
+    epsilon_min=0.0,
+    seed=None,
+):
+    if seed is not None:
+        np.random.seed(seed)
+
+    bins = create_bins(env, num_bins)
+    num_actions = env.action_space.n
+
+    # initialize Q with zeros
+    Q = np.zeros([num_bins] * len(bins) + [num_actions])
+
+    algorithm = run_sarsa_episode if algo == "sarsa" else run_qlearning_episode
+    episode_returns = []
+    eps = epsilon
+    for episode in range(num_episodes):
+        returns = algorithm(env, Q, bins, alpha, eps, gamma)
+        episode_returns.append(returns)
+
+        if epsilon_decay is not None:
+            eps = max(eps * epsilon_decay, epsilon_min)
+
+    return episode_returns
+
+
+# grid search over alpha and epsilon
+def hyperparameter_search(algo, num_episodes=500, num_runs=3):
+    alphas = [0.1, 0.3, 0.5]
+    epsilons = [0.05, 0.1, 0.3]
+
+    results = []
+
     env = gym.make("Acrobot-v1")
-    print("Setup complete and error-free!")
+
+    for alpha in alphas:
+        for epsilon in epsilons:
+            # averaging over a few runs
+            all_returns = []
+            for run in range(num_runs):
+                rets = train(env, algo, num_episodes, alpha, epsilon, seed=run)
+                all_returns.append(rets)
+
+            mean_final = np.mean([np.mean(r[-50:]) for r in all_returns])
+            results.append(
+                {
+                    "algo": algo,
+                    "alpha": alpha,
+                    "epsilon": epsilon,
+                    "mean_final_return": mean_final,
+                }
+            )
+            print(
+                f"  [{algo}] alpha={alpha}, eps={epsilon} -> mean_final={mean_final:.2f}"
+            )
     env.close()
+
+    results.sort(
+        key=lambda x: x["mean_final_return"], reverse=True
+    )  # higher return better (closer to zero)
+    return results
+
+
+if __name__ == "__main__":
+    print("Hyperparameter Search: SARSA")
+    sarsa_results = hyperparameter_search("sarsa")
+    print("\nTop 3 SARSA configurations:")
+    for r in sarsa_results[:3]:
+        print(
+            f"  alpha={r['alpha']}, epsilon={r['epsilon']} -> {r['mean_final_return']:.2f}"
+        )
+
+    print("\nHyperparameter Search: Q-Learning")
+    ql_results = hyperparameter_search("qlearning")
+    print("\nTop 3 Q-Learning configurations:")
+    for r in ql_results[:3]:
+        print(
+            f"  alpha={r['alpha']}, epsilon={r['epsilon']} -> {r['mean_final_return']:.2f}"
+        )

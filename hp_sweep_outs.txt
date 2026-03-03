@@ -1,0 +1,31 @@
+Hyperparameter Search: SARSA
+  [sarsa] alpha=0.1, eps=0.05 -> mean_final=-431.02
+  [sarsa] alpha=0.1, eps=0.1 -> mean_final=-454.81
+  [sarsa] alpha=0.1, eps=0.3 -> mean_final=-456.19
+  [sarsa] alpha=0.3, eps=0.05 -> mean_final=-418.16
+  [sarsa] alpha=0.3, eps=0.1 -> mean_final=-432.33
+  [sarsa] alpha=0.3, eps=0.3 -> mean_final=-450.45
+  [sarsa] alpha=0.5, eps=0.05 -> mean_final=-408.55
+  [sarsa] alpha=0.5, eps=0.1 -> mean_final=-434.45
+  [sarsa] alpha=0.5, eps=0.3 -> mean_final=-472.41
+
+Top 3 SARSA configurations:
+  alpha=0.5, epsilon=0.05 -> -408.55
+  alpha=0.3, epsilon=0.05 -> -418.16
+  alpha=0.1, epsilon=0.05 -> -431.02
+
+Hyperparameter Search: Q-Learning
+  [qlearning] alpha=0.1, eps=0.05 -> mean_final=-432.31
+  [qlearning] alpha=0.1, eps=0.1 -> mean_final=-428.46
+  [qlearning] alpha=0.1, eps=0.3 -> mean_final=-466.31
+  [qlearning] alpha=0.3, eps=0.05 -> mean_final=-416.88
+  [qlearning] alpha=0.3, eps=0.1 -> mean_final=-397.19
+  [qlearning] alpha=0.3, eps=0.3 -> mean_final=-446.29
+  [qlearning] alpha=0.5, eps=0.05 -> mean_final=-432.41
+  [qlearning] alpha=0.5, eps=0.1 -> mean_final=-424.31
+  [qlearning] alpha=0.5, eps=0.3 -> mean_final=-472.31
+
+Top 3 Q-Learning configurations:
+  alpha=0.3, epsilon=0.1 -> -397.19
+  alpha=0.3, epsilon=0.05 -> -416.88
+  alpha=0.5, epsilon=0.1 -> -424.31
