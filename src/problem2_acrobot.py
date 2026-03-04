@@ -248,6 +248,34 @@ def plot_smoothed_returns(
     print("Saved plot to q2b_plot_rs.png")
 
 
+# plot all bin counts on one figure
+def plot_q4(q4_results, window=50, filename="q4_bins_plot.png"):
+    plt.figure(figsize=(10, 6))
+    colors = ["green", "blue", "orange", "red"]
+
+    def moving_average(a):
+        ret = np.cumsum(a, axis=1, dtype=float)
+        ret[:, window:] = ret[:, window:] - ret[:, :-window]
+        return ret[:, window - 1 :] / window
+
+    for nb, color in zip(sorted(q4_results.keys()), colors):
+        smoothed = moving_average(np.array(q4_results[nb]))
+        mean = np.mean(smoothed, axis=0)
+        std = np.std(smoothed, axis=0)
+        episodes = np.arange(len(mean))
+        plt.plot(episodes, mean, label=f"{nb} bins", color=color)
+        plt.fill_between(episodes, mean - std, mean + std, color=color, alpha=0.2)
+
+    plt.title("Q-Learning: Effect of Number of Bins (10 Seeds)")
+    plt.xlabel("Episode Number")
+    plt.ylabel("Episodic Return")
+    plt.legend()
+    plt.grid(True, alpha=0.3)
+    plt.savefig(filename)
+    plt.close()
+    print(f"Saved plot to {filename}")
+
+
 if __name__ == "__main__":
     # Q-2(a)
     # print("Hyperparameter Search: SARSA")
@@ -351,64 +379,94 @@ if __name__ == "__main__":
     # env.close()
 
     # Q-3: epsilon 1 -> 0.1 -> fixed, compare online vs greedy post-learning
-    NUM_EPISODES = 2000
-    Q3_DECAY = 0.99
-    Q3_EPS_MIN = 0.1
+    # NUM_EPISODES = 2000
+    # Q3_DECAY = 0.99
+    # Q3_EPS_MIN = 0.1
 
-    all_sarsa_q3, all_ql_q3 = [], []
-    sarsa_greedy_evals, ql_greedy_evals = [], []
+    # all_sarsa_q3, all_ql_q3 = [], []
+    # sarsa_greedy_evals, ql_greedy_evals = [], []
+
+    # env = gym.make("Acrobot-v1")
+
+    # for s in range(10):
+    #     print(f"  Seed {s+1}/10...")
+    #     bins = create_bins(env, num_bins=10)
+
+    #     sarsa_ret, sarsa_Q = train(
+    #         env,
+    #         "sarsa",
+    #         NUM_EPISODES,
+    #         alpha=0.5,
+    #         epsilon=1.0,
+    #         epsilon_decay=Q3_DECAY,
+    #         epsilon_min=Q3_EPS_MIN,
+    #         seed=s,
+    #     )
+    #     ql_ret, ql_Q = train(
+    #         env,
+    #         "qlearning",
+    #         NUM_EPISODES,
+    #         alpha=0.3,
+    #         epsilon=1.0,
+    #         epsilon_decay=Q3_DECAY,
+    #         epsilon_min=Q3_EPS_MIN,
+    #         seed=s,
+    #     )
+
+    #     all_sarsa_q3.append(sarsa_ret)
+    #     all_ql_q3.append(ql_ret)
+    #     sarsa_greedy_evals.append(
+    #         evaluate_greedy(env, sarsa_Q, bins, num_episodes=NUM_EPISODES, seed=s)
+    #     )
+    #     ql_greedy_evals.append(
+    #         evaluate_greedy(env, ql_Q, bins, num_episodes=NUM_EPISODES, seed=s)
+    #     )
+
+    # print(
+    #     f"\nPost-learning greedy evaluation (mean over 10 seeds, 2000 episodes each):"
+    # )
+    # print(
+    #     f"  SARSA: {np.mean(sarsa_greedy_evals):.2f} ± {np.std(sarsa_greedy_evals):.2f}"
+    # )
+    # print(
+    #     f"  Q-Learning: {np.mean(ql_greedy_evals):.2f} ± {np.std(ql_greedy_evals):.2f}"
+    # )
+
+    # plot_smoothed_returns(
+    #     all_sarsa_q3,
+    #     all_ql_q3,
+    #     window=50,
+    #     filename="q3_online_plot.png",
+    #     title="Q3: Online Performance (ε: 1→0.1→fixed)",
+    # )
+    # env.close()
+    # Q-4: Effect of number of bins
+    NUM_EPISODES = 2000
+    Q4_DECAY = 0.99
+    Q4_EPS_MIN = 0.1
+    bin_counts = [5, 10, 15, 20]
+    q4_results = {}
 
     env = gym.make("Acrobot-v1")
+    for nb in bin_counts:
+        print(f"  Bins = {nb}...")
+        all_rets = []
+        for s in range(10):
+            # use Q-Learning with tuned hyperparams
+            rets, _ = train(
+                env,
+                "qlearning",
+                NUM_EPISODES,
+                alpha=0.3,
+                epsilon=1.0,
+                epsilon_decay=Q4_DECAY,
+                epsilon_min=Q4_EPS_MIN,
+                num_bins=nb,
+                seed=s,
+            )
+            all_rets.append(rets)
+        q4_results[nb] = all_rets
 
-    for s in range(10):
-        print(f"  Seed {s+1}/10...")
-        bins = create_bins(env, num_bins=10)
-
-        sarsa_ret, sarsa_Q = train(
-            env,
-            "sarsa",
-            NUM_EPISODES,
-            alpha=0.5,
-            epsilon=1.0,
-            epsilon_decay=Q3_DECAY,
-            epsilon_min=Q3_EPS_MIN,
-            seed=s,
-        )
-        ql_ret, ql_Q = train(
-            env,
-            "qlearning",
-            NUM_EPISODES,
-            alpha=0.3,
-            epsilon=1.0,
-            epsilon_decay=Q3_DECAY,
-            epsilon_min=Q3_EPS_MIN,
-            seed=s,
-        )
-
-        all_sarsa_q3.append(sarsa_ret)
-        all_ql_q3.append(ql_ret)
-        sarsa_greedy_evals.append(
-            evaluate_greedy(env, sarsa_Q, bins, num_episodes=NUM_EPISODES, seed=s)
-        )
-        ql_greedy_evals.append(
-            evaluate_greedy(env, ql_Q, bins, num_episodes=NUM_EPISODES, seed=s)
-        )
-
-    print(
-        f"\nPost-learning greedy evaluation (mean over 10 seeds, 2000 episodes each):"
-    )
-    print(
-        f"  SARSA: {np.mean(sarsa_greedy_evals):.2f} ± {np.std(sarsa_greedy_evals):.2f}"
-    )
-    print(
-        f"  Q-Learning: {np.mean(ql_greedy_evals):.2f} ± {np.std(ql_greedy_evals):.2f}"
-    )
-
-    plot_smoothed_returns(
-        all_sarsa_q3,
-        all_ql_q3,
-        window=50,
-        filename="q3_online_plot.png",
-        title="Q3: Online Performance (ε: 1→0.1→fixed)",
-    )
     env.close()
+
+    plot_q4(q4_results)

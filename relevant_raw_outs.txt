@@ -39,3 +39,8 @@ SARSA Constant Eps (0.05) Final Return: -441.24
 SARSA Decaying Eps (1.0->0.05) Final Return: -402.84
 Q-learning Constant Eps (0.05) Final Return: -446.66
 Q-learning Decaying Eps (1.0->0.05) Final Return: -480.34
+
+POST LEARNING GREEDY EVALUATION OUTPUTS:
+
+SARSA: -386.54 ± 28.55
+Q-Learning: -342.03 ± 56.31
