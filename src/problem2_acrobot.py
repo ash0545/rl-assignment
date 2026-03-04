@@ -144,7 +144,10 @@ def train(
         if epsilon_decay is not None:
             eps = max(eps * epsilon_decay, epsilon_min)
 
-    return episode_returns
+    return (
+        episode_returns,
+        Q,  # added since we'll need this for acting greedily for question 3
+    )
 
 
 # grid search over alpha and epsilon
@@ -161,7 +164,7 @@ def hyperparameter_search(algo, num_episodes=500, num_runs=3):
             # averaging over a few runs
             all_returns = []
             for run in range(num_runs):
-                rets = train(env, algo, num_episodes, alpha, epsilon, seed=run)
+                rets, _ = train(env, algo, num_episodes, alpha, epsilon, seed=run)
                 all_returns.append(rets)
 
             mean_final = np.mean([np.mean(r[-50:]) for r in all_returns])
@@ -185,7 +188,13 @@ def hyperparameter_search(algo, num_episodes=500, num_runs=3):
 
 
 # mean performance with confidence intervals over 10 seeds
-def plot_smoothed_returns(sarsa_returns, ql_returns, window=50):
+def plot_smoothed_returns(
+    sarsa_returns,
+    ql_returns,
+    window=50,
+    filename="plot.png",
+    title="SARSA vs Q-Learning",
+):
 
     # https://stackoverflow.com/a/14314054
     def moving_average(a):
@@ -208,12 +217,12 @@ def plot_smoothed_returns(sarsa_returns, ql_returns, window=50):
     plt.plot(episodes, q_mean, label="Q-Learning", color="blue")
     plt.fill_between(episodes, q_mean - q_std, q_mean + q_std, color="blue", alpha=0.2)
 
-    plt.title("SARSA vs Q-Learning (10 Seeds)")
+    plt.title(title)
     plt.xlabel("Episode Number")
     plt.ylabel("Episodic Return")
     plt.legend()
     plt.grid(True, alpha=0.3)
-    plt.savefig("q2b_plot_rs.png")
+    plt.savefig(filename)
     plt.close()
     print("Saved plot to q2b_plot_rs.png")
 
@@ -236,15 +245,13 @@ if __name__ == "__main__":
     #         f"  alpha={r['alpha']}, epsilon={r['epsilon']} -> {r['mean_final_return']:.2f}"
     #     )
 
-    env = gym.make("Acrobot-v1")
-    # increased the number of episodes as per Videh Raj Nema bhaiya's suggestion on the discord
+    # env = gym.make("Acrobot-v1")
     # NUM_EPISODES = 500
-    NUM_EPISODES = 2000
-    NUM_SEEDS = 10
+    # NUM_SEEDS = 10
 
     # print("Epsilon Decay Check")
-    # sarsa_const = train(env, "sarsa", NUM_EPISODES, alpha=0.5, epsilon=0.05, seed=42)
-    # sarsa_decay = train(
+    # sarsa_const, _ = train(env, "sarsa", NUM_EPISODES, alpha=0.5, epsilon=0.05, seed=42)
+    # sarsa_decay, _ = train(
     #     env,
     #     "sarsa",
     #     NUM_EPISODES,
@@ -260,10 +267,10 @@ if __name__ == "__main__":
     #     f"SARSA Decaying Eps (1.0->0.05) Final Return: {np.mean(sarsa_decay[-50:]):.2f}"
     # )
 
-    # qlearn_const = train(
+    # qlearn_const, _ = train(
     #     env, "qlearning", NUM_EPISODES, alpha=0.5, epsilon=0.05, seed=42
     # )
-    # qlearn_decay = train(
+    # qlearn_decay, _ = train(
     #     env,
     #     "qlearning",
     #     NUM_EPISODES,
