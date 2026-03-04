@@ -123,7 +123,15 @@ def train(
     num_actions = env.action_space.n
 
     # initialize Q with zeros
-    Q = np.zeros([num_bins] * len(bins) + [num_actions])
+    # Q = np.zeros([num_bins] * len(bins) + [num_actions])
+
+    rng = np.random.default_rng(seed)
+    Q = rng.uniform(
+        low=-0.01, high=0.01, size=tuple([num_bins] * len(bins) + [num_actions])
+    )
+
+    # add this line right after Q initialization:
+    env.reset(seed=seed)
 
     algorithm = run_sarsa_episode if algo == "sarsa" else run_qlearning_episode
     episode_returns = []
