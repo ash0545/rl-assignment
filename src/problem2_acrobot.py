@@ -1,5 +1,6 @@
 import gymnasium as gym
 import numpy as np
+import matplotlib.pyplot as plt
 
 
 # creates the "bounds" of bins for the state space
@@ -183,6 +184,40 @@ def hyperparameter_search(algo, num_episodes=500, num_runs=3):
     return results
 
 
+# mean performance with confidence intervals over 10 seeds
+def plot_smoothed_returns(sarsa_returns, ql_returns, window=50):
+
+    # https://stackoverflow.com/a/14314054
+    def moving_average(a):
+        ret = np.cumsum(a, axis=1, dtype=float)
+        ret[:, window:] = ret[:, window:] - ret[:, :-window]
+        return ret[:, window - 1 :] / window
+
+    s_smooth = moving_average(np.array(sarsa_returns))
+    q_smooth = moving_average(np.array(ql_returns))
+
+    s_mean, s_std = np.mean(s_smooth, axis=0), np.std(s_smooth, axis=0)
+    q_mean, q_std = np.mean(q_smooth, axis=0), np.std(q_smooth, axis=0)
+
+    episodes = np.arange(len(s_mean))
+
+    plt.figure(figsize=(10, 6))
+    plt.plot(episodes, s_mean, label="SARSA", color="red")
+    plt.fill_between(episodes, s_mean - s_std, s_mean + s_std, color="red", alpha=0.2)
+
+    plt.plot(episodes, q_mean, label="Q-Learning", color="blue")
+    plt.fill_between(episodes, q_mean - q_std, q_mean + q_std, color="blue", alpha=0.2)
+
+    plt.title("SARSA vs Q-Learning (10 Seeds)")
+    plt.xlabel("Episode Number")
+    plt.ylabel("Episodic Return")
+    plt.legend()
+    plt.grid(True, alpha=0.3)
+    plt.savefig("q2b_plot_rs.png")
+    plt.close()
+    print("Saved plot to q2b_plot_rs.png")
+
+
 if __name__ == "__main__":
     # Q-2(a)
     # print("Hyperparameter Search: SARSA")
@@ -202,42 +237,82 @@ if __name__ == "__main__":
     #     )
 
     env = gym.make("Acrobot-v1")
-    NUM_EPISODES = 500
+    # increased the number of episodes as per Videh Raj Nema bhaiya's suggestion on the discord
+    # NUM_EPISODES = 500
+    NUM_EPISODES = 2000
     NUM_SEEDS = 10
-    print("Epsilon Decay Check")
-    sarsa_const = train(env, "sarsa", NUM_EPISODES, alpha=0.5, epsilon=0.05, seed=42)
-    sarsa_decay = train(
-        env,
-        "sarsa",
-        NUM_EPISODES,
-        alpha=0.5,
-        epsilon=1.0,
-        epsilon_decay=0.99,
-        epsilon_min=0.05,
-        seed=42,
-    )
 
-    print(f"SARSA Constant Eps (0.05) Final Return: {np.mean(sarsa_const[-50:]):.2f}")
-    print(
-        f"SARSA Decaying Eps (1.0->0.05) Final Return: {np.mean(sarsa_decay[-50:]):.2f}"
-    )
+    # print("Epsilon Decay Check")
+    # sarsa_const = train(env, "sarsa", NUM_EPISODES, alpha=0.5, epsilon=0.05, seed=42)
+    # sarsa_decay = train(
+    #     env,
+    #     "sarsa",
+    #     NUM_EPISODES,
+    #     alpha=0.5,
+    #     epsilon=1.0,
+    #     epsilon_decay=0.99,
+    #     epsilon_min=0.05,
+    #     seed=42,
+    # )
 
-    qlearn_const = train(
-        env, "qlearning", NUM_EPISODES, alpha=0.5, epsilon=0.05, seed=42
-    )
-    qlearn_decay = train(
-        env,
-        "qlearning",
-        NUM_EPISODES,
-        alpha=0.5,
-        epsilon=1.0,
-        epsilon_decay=0.99,
-        epsilon_min=0.05,
-        seed=42,
-    )
-    print(
-        f"Q-learning Constant Eps (0.05) Final Return: {np.mean(qlearn_const[-50:]):.2f}"
-    )
-    print(
-        f"Q-learning Decaying Eps (1.0->0.05) Final Return: {np.mean(qlearn_decay[-50:]):.2f}"
-    )
+    # print(f"SARSA Constant Eps (0.05) Final Return: {np.mean(sarsa_const[-50:]):.2f}")
+    # print(
+    #     f"SARSA Decaying Eps (1.0->0.05) Final Return: {np.mean(sarsa_decay[-50:]):.2f}"
+    # )
+
+    # qlearn_const = train(
+    #     env, "qlearning", NUM_EPISODES, alpha=0.5, epsilon=0.05, seed=42
+    # )
+    # qlearn_decay = train(
+    #     env,
+    #     "qlearning",
+    #     NUM_EPISODES,
+    #     alpha=0.5,
+    #     epsilon=1.0,
+    #     epsilon_decay=0.99,
+    #     epsilon_min=0.05,
+    #     seed=42,
+    # )
+    # print(
+    #     f"Q-learning Constant Eps (0.05) Final Return: {np.mean(qlearn_const[-50:]):.2f}"
+    # )
+    # print(
+    #     f"Q-learning Decaying Eps (1.0->0.05) Final Return: {np.mean(qlearn_decay[-50:]):.2f}"
+    # )
+
+    # Q-2(b)
+    print("Running 10 Seeds for Plotting")
+    all_sarsa = []
+    all_ql = []
+
+    for s in range(NUM_SEEDS):
+        print(f"Running seed {s+1}/{NUM_SEEDS}...")
+        # the best hyperparameters found:
+        # SARSA: alpha=0.5, decay to 0.05
+        # Q-Learning: alpha=0.3, decay to 0.1
+        sarsa_ret = train(
+            env,
+            "sarsa",
+            NUM_EPISODES,
+            alpha=0.5,
+            epsilon=1.0,
+            epsilon_decay=0.99,
+            epsilon_min=0.05,
+            seed=s,
+        )
+        ql_ret = train(
+            env,
+            "qlearning",
+            NUM_EPISODES,
+            alpha=0.3,
+            epsilon=1.0,
+            epsilon_decay=0.99,
+            epsilon_min=0.1,
+            seed=s,
+        )
+
+        all_sarsa.append(sarsa_ret)
+        all_ql.append(ql_ret)
+
+    plot_smoothed_returns(all_sarsa, all_ql)
+    env.close()
