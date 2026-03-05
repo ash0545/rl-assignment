@@ -276,6 +276,77 @@ def plot_q4(q4_results, window=50, filename="q4_bins_plot.png"):
     print(f"Saved plot to {filename}")
 
 
+# Q-6 Bonus: Custom reward wrapper
+# replaces Acrobot's reward with r = ηh - 1 if ηh < 1, else 1
+# following along with https://gymnasium.farama.org/tutorials/gymnasium_basics/implementing_custom_wrappers/#inheriting-from-gymnasium-wrapper
+class ModifiedRewardWrapper(gym.Wrapper):
+    def __init__(self, env, eta):
+        super().__init__(env)
+        self.eta = eta
+
+    def step(self, action):
+        obs, reward, terminated, truncated, info = self.env.step(action)
+        # height of tip = -cos(theta1) - cos(theta1 + theta2),
+        # mentioned here: https://gymnasium.farama.org/environments/classic_control/acrobot/#episode-end
+        # obs = [cos(t1), sin(t1), cos(t2), sin(t2), tdot1, tdot2]
+        h = -obs[0] - (obs[0] * obs[2] - obs[1] * obs[3])
+        x = self.eta * h
+        reward = (x - 1) if x < 1 else 1.0
+        return obs, reward, terminated, truncated, info
+
+
+def run_q6(num_episodes):
+    etas = [0.5, 1.0, 2.0, 5.0]
+    q6_results = {}
+    colors = ["green", "blue", "orange", "red"]
+
+    for eta in etas:
+        print(f"  eta={eta}...")
+        all_rets = []
+        for s in range(10):
+            base_env = gym.make("Acrobot-v1")
+            env = ModifiedRewardWrapper(base_env, eta=eta)
+            rets, _ = train(
+                env,
+                "qlearning",
+                num_episodes=num_episodes,
+                alpha=0.3,
+                epsilon=1.0,
+                epsilon_decay=0.99,
+                epsilon_min=0.1,
+                seed=s,
+            )
+            env.close()
+            all_rets.append(rets)
+        q6_results[eta] = all_rets
+        mean_final = np.mean([np.mean(r[-100:]) for r in all_rets])
+        print(f"    Mean final return (last 100 eps): {mean_final:.2f}")
+
+    # plot
+    plt.figure(figsize=(10, 6))
+
+    def moving_average(a, window=50):
+        ret = np.cumsum(a, axis=1, dtype=float)
+        ret[:, window:] = ret[:, window:] - ret[:, :-window]
+        return ret[:, window - 1 :] / window
+
+    for eta, color in zip(etas, colors):
+        smoothed = moving_average(np.array(q6_results[eta]))
+        mean = np.mean(smoothed, axis=0)
+        std = np.std(smoothed, axis=0)
+        episodes = np.arange(len(mean))
+        plt.plot(episodes, mean, label=f"η={eta}", color=color)
+        plt.fill_between(episodes, mean - std, mean + std, color=color, alpha=0.2)
+
+    plt.title("Q6: Q-Learning with Modified Reward (10 Seeds)")
+    plt.xlabel("Episode Number")
+    plt.ylabel("Episodic Return")
+    plt.legend()
+    plt.grid(True, alpha=0.3)
+    plt.savefig("q6_modified_reward.png")
+    plt.close()
+
+
 if __name__ == "__main__":
     # # ----------------------------------------------------------------------------
     # # Q-2(a)
@@ -446,32 +517,36 @@ if __name__ == "__main__":
 
     # # ----------------------------------------------------------------------------
     # # Q-4: Effect of number of bins
-    NUM_EPISODES = 2000
-    Q4_DECAY = 0.99
-    Q4_EPS_MIN = 0.1
-    bin_counts = [5, 10, 15, 20]
-    q4_results = {}
+    # NUM_EPISODES = 2000
+    # Q4_DECAY = 0.99
+    # Q4_EPS_MIN = 0.1
+    # bin_counts = [5, 10, 15, 20]
+    # q4_results = {}
 
-    env = gym.make("Acrobot-v1")
-    for nb in bin_counts:
-        print(f"  Bins = {nb}...")
-        all_rets = []
-        for s in range(10):
-            # use Q-Learning with tuned hyperparams
-            rets, _ = train(
-                env,
-                "qlearning",
-                NUM_EPISODES,
-                alpha=0.3,
-                epsilon=1.0,
-                epsilon_decay=Q4_DECAY,
-                epsilon_min=Q4_EPS_MIN,
-                num_bins=nb,
-                seed=s,
-            )
-            all_rets.append(rets)
-        q4_results[nb] = all_rets
+    # env = gym.make("Acrobot-v1")
+    # for nb in bin_counts:
+    #     print(f"  Bins = {nb}...")
+    #     all_rets = []
+    #     for s in range(10):
+    #         # use Q-Learning with tuned hyperparams
+    #         rets, _ = train(
+    #             env,
+    #             "qlearning",
+    #             NUM_EPISODES,
+    #             alpha=0.3,
+    #             epsilon=1.0,
+    #             epsilon_decay=Q4_DECAY,
+    #             epsilon_min=Q4_EPS_MIN,
+    #             num_bins=nb,
+    #             seed=s,
+    #         )
+    #         all_rets.append(rets)
+    #     q4_results[nb] = all_rets
 
-    env.close()
+    # env.close()
 
-    plot_q4(q4_results)
+    # plot_q4(q4_results)
+
+    # # ----------------------------------------------------------------------------
+    # # Q-6: Custom dense reward, more details provided as comments in relevant function and class (run_q6 and ModifiedRewardWrapper)
+    run_q6(2000)

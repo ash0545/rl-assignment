@@ -44,3 +44,13 @@ POST LEARNING GREEDY EVALUATION OUTPUTS:
 
 SARSA: -386.54 ± 28.55
 Q-Learning: -342.03 ± 56.31
+
+BONUS MODIFIED REWARD EXPERIMENT
+  eta=0.5...
+    Mean final return (last 100 eps): -561.83
+  eta=1.0...
+    Mean final return (last 100 eps): -811.79
+  eta=2.0...
+    Mean final return (last 100 eps): -1187.02
+  eta=5.0...
+    Mean final return (last 100 eps): -2442.30

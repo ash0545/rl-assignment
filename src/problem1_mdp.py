@@ -280,6 +280,7 @@ if __name__ == "__main__":
     #             print(f"  -> to ({r_new},{c_new}): P = {prob:.2f}, R = {reward}")
     #     print()
 
+    # # ----------------------------------------------------------------------------
     # print("Q2: Value Iteration")
     # optimal_V, optimal_policy = run_value_iteration(P, R)
 
@@ -287,6 +288,7 @@ if __name__ == "__main__":
     # visualize_phase(optimal_V, optimal_policy, w=0, filename="phase1_water_empty.png")
     # visualize_phase(optimal_V, optimal_policy, w=1, filename="phase2_water_filled.png")
 
+    # # ----------------------------------------------------------------------------
     # print("Q3: Modified MDP setting - gamma = 0.3")
     # optimal_V, optimal_policy = run_value_iteration(P, R, gamma=0.3)
     # visualize_phase(
@@ -296,6 +298,7 @@ if __name__ == "__main__":
     #     optimal_V, optimal_policy, w=1, filename="phase2_wfilled_gamma_0.3.png"
     # )
 
+    # ----------------------------------------------------------------------------
     print("Q4: Heavier Penalties, Windier MDP")
     # hardcoded values in line 108 was changed from -11 to -91
     # another hardcoded was then applied for probabilities in lines 59-61
