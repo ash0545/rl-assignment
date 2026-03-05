@@ -277,7 +277,8 @@ def plot_q4(q4_results, window=50, filename="q4_bins_plot.png"):
 
 
 if __name__ == "__main__":
-    # Q-2(a)
+    # # ----------------------------------------------------------------------------
+    # # Q-2(a)
     # print("Hyperparameter Search: SARSA")
     # sarsa_results = hyperparameter_search("sarsa")
     # print("\nTop 3 SARSA configurations:")
@@ -336,6 +337,7 @@ if __name__ == "__main__":
     #     f"Q-learning Decaying Eps (1.0->0.05) Final Return: {np.mean(qlearn_decay[-50:]):.2f}"
     # )
 
+    # # ----------------------------------------------------------------------------
     # # Q-2(b)
     # env = gym.make("Acrobot-v1")
     # # increased the number of episodes as per Videh Raj Nema bhaiya's suggestion on the discord
@@ -378,7 +380,8 @@ if __name__ == "__main__":
     # plot_smoothed_returns(all_sarsa, all_ql, window=50, filename="q2b_plot_rs.png", title="SARSA vs Q-Learning (10 Seeds)")
     # env.close()
 
-    # Q-3: epsilon 1 -> 0.1 -> fixed, compare online vs greedy post-learning
+    # # ----------------------------------------------------------------------------
+    # # Q-3: epsilon 1 -> 0.1 -> fixed, compare online vs greedy post-learning
     # NUM_EPISODES = 2000
     # Q3_DECAY = 0.99
     # Q3_EPS_MIN = 0.1
@@ -440,7 +443,9 @@ if __name__ == "__main__":
     #     title="Q3: Online Performance (ε: 1→0.1→fixed)",
     # )
     # env.close()
-    # Q-4: Effect of number of bins
+
+    # # ----------------------------------------------------------------------------
+    # # Q-4: Effect of number of bins
     NUM_EPISODES = 2000
     Q4_DECAY = 0.99
     Q4_EPS_MIN = 0.1
