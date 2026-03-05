@@ -163,3 +163,16 @@ However, the $r = +1$ region (when $h \geq 1/\eta$) introduces the risk of **rew
 - **Positive intermediate rewards are dangerous.** If a non-terminal state yields a positive reward, the agent may exploit it indefinitely rather than pursuing the true goal (reward hacking).
 - **A well-designed reward should be (i) non-positive until the true goal is reached, (ii) provide a gradient toward the goal, and (iii) not incentivize avoiding episode termination.** The $\eta = 0.5$ case satisfies all three criteria and is the ideal setting.
 - Reward shaping is a powerful tool, but the shaped reward must remain aligned with the original task's termination objective.
+
+**6. Empirical Analysis for the Modified Reward Function:**
+
+Testing the modified reward function on the best Q-learning setup yielded the below:
+
+| $\eta$ | Mean Final Return (Last 100 Episodes) |
+| ------ | ------------------------------------- |
+| 0.5    | -561.83                               |
+| 1.0    | -811.79                               |
+| 2.0    | -1187.02                              |
+| 5.0    | -2442.30                              |
+
+These results *confirm* the theoretical prediction that higher $\eta$ is harmful, but the mechanism is different from pure reward hacking - it is the **amplified early-episode penalties** that dominate. The $\eta=0.5$ case is the least bad but still underperforms the original due to scale mismatch (since even at $\eta=0.5$ the starting penalty is $−2$ vs $−1$, so returns are structurally larger in magnitude for the same episode length) and untuned hyperparameters.
